@@ -32,6 +32,14 @@ colours = [240, 250, 250, 250, 15]
 
 # 3. boids match velocity.
 
+t = (np.round(vision) * 2 + 1).astype(int)
+ix = np.repeat(np.arange(t), t)
+iy = np.tile(np.arange(t), t)
+boids = np.random.rand(num, 2) * os.get_terminal_size().lines
+olds = np.copy(boids)
+vectors = np.full((num, 2), 0.0) 
+oldvel = np.full((num, 2), 0.0)
+
 # print function.
 def disp():
     global display, boids
@@ -98,28 +106,27 @@ def rules(index):
     #avoid(boid + (velocities[index] / 4 * lookahead))
     #avoidance = 0
 
-t = (np.round(vision) * 2 + 1).astype(int)
-ix = np.repeat(np.arange(t), t)
-iy = np.tile(np.arange(t), t)
-boids = np.random.rand(num, 2) * os.get_terminal_size().lines
-olds = np.copy(boids)
-vectors = np.full((num, 2), 0.0) 
-oldvel = np.full((num, 2), 0.0)
+def main():
+    global boids, olds, velocities, mask, sizeX, sizeY
+    while True:
+        try:
+            velocities = (boids - olds)
+            sizeX = os.get_terminal_size().lines - 2
+            sizeY = np.floor(os.get_terminal_size().columns / 2).astype(int)
+            mask = np.full((sizeX + 12, sizeY + 12), True)
+            mask[6: -6, 6: -6] = False
+            for i in range(num):
+                vectors[i] = rules(i)
+            olds = np.copy(boids)
+            boids += vectors
+            oldvel = np.copy(velocities)
+            disp()
+            time.sleep(nap)
+        except KeyboardInterrupt:
+            break
+            disp()
 
-while True:
-    try:
-        velocities = (boids - olds)
-        sizeX = os.get_terminal_size().lines - 2
-        sizeY = np.floor(os.get_terminal_size().columns / 2).astype(int)
-        mask = np.full((sizeX + 12, sizeY + 12), True)
-        mask[6: -6, 6: -6] = False
-        for i in range(num):
-            vectors[i] = rules(i)
-        olds = np.copy(boids)
-        boids += vectors
-        oldvel = np.copy(velocities)
-        disp()
-        time.sleep(nap)
-    except KeyboardInterrupt:
-        sys.exit(0)
-       
+if __name__ == '__main__':
+    main()
+
+
